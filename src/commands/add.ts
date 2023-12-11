@@ -67,7 +67,7 @@ export const add = new Command()
         }
       }
 
-      const spinner = ora(`Installing components...`).start();
+      // const spinner = ora(`Installing components...`).start();
       const { args } = opts;
       const registry = await fetch(
         "https://elements.atomlab.dev/registry/components.json"
@@ -80,9 +80,9 @@ export const add = new Command()
       const valid = args.filter((c: string) => registryComponents.includes(c));
 
       if (invalid.length) {
-        spinner.fail(
-          `Component(s) not found: ${invalid.map((i: string) => i).join(", ")}`
-        );
+        // spinner.fail(
+        //   `Component(s) not found: ${invalid.map((i: string) => i).join(", ")}`
+        // );
         process.exit(1);
       }
 
@@ -91,14 +91,42 @@ export const add = new Command()
       const cwd = path.resolve(process.cwd());
       const targetDir = `${cwd}/${response.path}`;
 
+      const existingArr = results.filter((result) => {
+        const p = path.resolve(targetDir, result.filename);
+        const exists = existsSync(p);
+
+        if (exists) {
+          return true;
+        } else {
+          return false;
+        }
+      });
+
+      // console.log("existing components", existingArr);
+
+      if (existingArr && existingArr.length) {
+        const overwritePrompt = await prompts({
+          type: "confirm",
+          name: "value",
+          message: `The following files already exist: ${existingArr.map(
+            (item) => `${item.filename}`
+          )} - would you like to overwrite them?`,
+          initial: true,
+        });
+
+        if (!overwritePrompt || overwritePrompt.value === false) {
+          return process.exit(1);
+        }
+      }
+
       results.forEach(async (result) => {
         if (result.install) {
           let filePath = path.resolve(targetDir, result.filename);
           await fs.writeFile(filePath, JSON.parse(result.install));
         }
       });
-      spinner.succeed(`Done.`);
+      // spinner.succeed(`Done.`);
     } else {
-      process.exit(1);
+      return process.exit(1);
     }
   });
