@@ -2,10 +2,11 @@ import { Command } from "commander";
 import path, { resolve } from "path";
 import { existsSync, promises as fs } from "fs";
 import ora from "ora";
+import prompts from "prompts";
 
 // check component exists in registry [D]
 // fetch component [D]
-// ask user what directory they want to install component in
+// ask user what directory they want to install component in [D]
 // overwrite check
 // write component to directory [D]
 
@@ -34,99 +35,70 @@ export const add = new Command()
   .name("add")
   .description("add a component to your project")
   .action(async (components, opts) => {
-    const { args } = opts;
+    const cwd = process.cwd();
+    const dir = await fs.readdir(cwd);
 
-    // const result = await fetch(
-    //   `https://elements.atomlab.dev/registry/${component}.json`
-    // );
-    // const json: any = await result.json();
+    let defaultDir = "src/components";
 
-    const spinner = ora(`Installing components...`).start();
-
-    const registry = await fetch(
-      "https://elements.atomlab.dev/registry/components.json"
-    );
-    const registryData: any = await registry.json();
-    const registryComponents = registryData.map((c: any) => c.slug);
-
-    const invalid = args.filter((c: string) => !registryComponents.includes(c));
-    const valid = args.filter((c: string) => registryComponents.includes(c));
-
-    console.log("invalid", invalid);
-
-    if (invalid.length) {
-      spinner.fail(
-        `Component(s) not found: ${invalid.map((i: string) => i).join(", ")}`
-      );
-      process.exit(1);
+    if (dir.includes("components")) {
+      defaultDir = "components";
     }
 
-    const promiseArr = valid.map((item: string) => getComponentData(item));
-    const results = await Promise.all(promiseArr);
-    const cwd = path.resolve(process.cwd());
-    const targetDir = cwd + "/test/components/";
-
-    if (!existsSync(targetDir)) {
-      await fs.mkdir(targetDir, { recursive: true });
-    }
-
-    results.forEach(async (result) => {
-      if (result.install) {
-        let filePath = path.resolve(targetDir, result.filename);
-        await fs.writeFile(filePath, JSON.parse(result.install));
-      }
+    const response = await prompts({
+      type: "text",
+      name: "path",
+      message: "Where would you like to install the component(s)?",
+      initial: defaultDir,
     });
 
-    spinner.succeed(`Done.`);
+    if (response && response.path) {
+      if (!existsSync(response.path)) {
+        const createPath = await prompts({
+          type: "confirm",
+          name: "value",
+          message: "Directory doesn't exist - do you want to create it?",
+          initial: true,
+        });
 
-    // console.log("json", json);
+        if (createPath && createPath.value) {
+          await fs.mkdir(response.path, { recursive: true });
+        } else {
+          return process.exit(1);
+        }
+      }
 
-    // if (json.install) {
-    //   const cwd = path.resolve(process.cwd());
-    //   const targetDir = cwd + "/test/components/";
-    //   let filePath = path.resolve(targetDir, `${component}.tsx`);
+      const spinner = ora(`Installing components...`).start();
+      const { args } = opts;
+      const registry = await fetch(
+        "https://elements.atomlab.dev/registry/components.json"
+      );
+      const registryData: any = await registry.json();
+      const registryComponents = registryData.map((c: any) => c.slug);
+      const invalid = args.filter(
+        (c: string) => !registryComponents.includes(c)
+      );
+      const valid = args.filter((c: string) => registryComponents.includes(c));
 
-    //   if (!existsSync(targetDir)) {
-    //     await fs.mkdir(targetDir, { recursive: true });
-    //   }
+      if (invalid.length) {
+        spinner.fail(
+          `Component(s) not found: ${invalid.map((i: string) => i).join(", ")}`
+        );
+        process.exit(1);
+      }
 
-    //   await fs.writeFile(filePath, JSON.parse(json.install));
+      const promiseArr = valid.map((item: string) => getComponentData(item));
+      const results = await Promise.all(promiseArr);
+      const cwd = path.resolve(process.cwd());
+      const targetDir = `${cwd}/${response.path}`;
 
-    //   spinner.succeed(`Done.`);
-    // } else {
-    //   process.exit(1);
-    // }
-
-    // try {
-    //   const c = await fetch(
-    //     "https://elements.atomlab.dev/registry/checkbox.json"
-    //   );
-    //   const json: any = await c.json();
-
-    //   console.log("C", json);
-
-    //   const cwd = path.resolve(process.cwd());
-    //   const targetDir = cwd + "/test/components/";
-    //   let filePath = path.resolve(targetDir, "test.tsx");
-
-    //   console.log("cwd", cwd);
-
-    //   const spinner = ora(`Installing components...`).start();
-
-    //   spinner.text = `Installing test...`;
-
-    //   if (!json || !json.install) {
-    //     process.exit(1);
-    //   }
-
-    //   if (!existsSync(targetDir)) {
-    //     await fs.mkdir(targetDir, { recursive: true });
-    //   }
-
-    //   await fs.writeFile(filePath, JSON.parse(json.install));
-
-    //   spinner.succeed(`Done.`);
-    // } catch (e) {
-    //   process.exit(1);
-    // }
+      results.forEach(async (result) => {
+        if (result.install) {
+          let filePath = path.resolve(targetDir, result.filename);
+          await fs.writeFile(filePath, JSON.parse(result.install));
+        }
+      });
+      spinner.succeed(`Done.`);
+    } else {
+      process.exit(1);
+    }
   });
