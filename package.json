@@ -1,7 +1,6 @@
 {
-  "name": "@atomlab/elements",
-  "version": "1.0.0",
-  "description": "",
+  "name": "@atomlabdev/elements",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "scripts": {
     "start": "tsup src dist --watch",
@@ -13,7 +12,7 @@
   "license": "ISC",
   "exports": "./dist/index.js",
   "bin": {
-    "@atomlab/elements": "./dist/index.js"
+    "elements": "dist/index.js"
   },
   "type": "module",
   "dependencies": {
@@ -29,5 +28,9 @@
     "@types/prompts": "^2.4.9",
     "tsup": "^8.0.1",
     "typescript": "^5.2.2"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "description": ""
 }

@@ -2,6 +2,9 @@
   "theme": "default",
   "components": {
     "directory": "test/test34343",
-    "installed": []
+    "installed": [
+      "Checkbox",
+      "Button"
+    ]
   }
 }

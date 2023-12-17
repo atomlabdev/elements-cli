@@ -8,6 +8,7 @@ import { existingConfigCheck } from "../checks/existing-config.js";
 import { doInit } from "../processes/init.js";
 import { rootDirCheck } from "../checks/root-dir.js";
 import { validateConfig } from "../checks/validate-config.js";
+import { doAdd } from "../processes/add.js";
 
 // check component exists in registry [D]
 // fetch component [D]
@@ -22,7 +23,13 @@ export const add = new Command()
   .description("add a component to your project")
   .action(async (components, opts) => {
     const cwd = process.cwd();
-    const dir = await fs.readdir(cwd);
+
+    const { args } = opts;
+
+    if (!args || !args.length) {
+      console.log("No components provided");
+      return process.exit(1);
+    }
 
     const isProjectRoot = await rootDirCheck();
 
@@ -48,8 +55,9 @@ export const add = new Command()
 
     await validateConfig();
 
-    const configFile = await fs.readFile(`${cwd}/elements-config.json`, "utf8");
-    const config = JSON.parse(configFile);
+    const added = await doAdd(args);
+
+    console.log("added response", added);
 
     return process.exit(0);
 

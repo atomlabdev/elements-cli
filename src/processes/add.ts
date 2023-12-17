@@ -1,6 +1,7 @@
 import { existsSync, promises as fs } from "fs";
 import path, { resolve } from "path";
 import prompts from "prompts";
+import { installComponent } from "../install/install-component.js";
 
 const getComponentData = (item: string): Promise<any> => {
   return new Promise(async (resolve, reject) => {
@@ -22,6 +23,7 @@ const getComponentData = (item: string): Promise<any> => {
 };
 
 export const doAdd = async (components: string[]) => {
+  console.log("do Add");
   const cwd = process.cwd();
   const configFile = await fs.readFile(`${cwd}/elements-config.json`, "utf8");
   const config = JSON.parse(configFile);
@@ -88,11 +90,23 @@ export const doAdd = async (components: string[]) => {
     }
   }
 
-  results.forEach(async (result) => {
-    if (result.install) {
-      let filePath = path.resolve(targetDir, result.filename);
-      await fs.writeFile(filePath, JSON.parse(result.install));
-    }
-  });
+  const installed = await Promise.all(
+    results.map((result) => installComponent(result, targetDir))
+  );
+
+  const updatedConfig = {
+    ...config,
+    components: {
+      ...config.components,
+      installed: [...config.components.installed, ...installed],
+    },
+  };
+
+  await fs.writeFile(
+    `${cwd}/elements-config.json`,
+    JSON.stringify(updatedConfig, null, 2),
+    "utf8"
+  );
+
   return process.exit(0);
 };
