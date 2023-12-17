@@ -1,5 +1,6 @@
 import { promptComponentDir } from "../prompts/component-dir.js";
 import { existsSync, promises as fs } from "fs";
+import { $ } from "execa";
 
 export const doInit = async () => {
   const cwd = process.cwd();
@@ -22,6 +23,9 @@ export const doInit = async () => {
       JSON.stringify(defaultConfig, null, 2),
       "utf8"
     );
+
+    console.log("Installing tailwind-react-native-classnames (twrnc)");
+    await $`npm install twrnc`;
 
     return true;
   } else {

@@ -55,9 +55,9 @@ export const add = new Command()
 
     await validateConfig();
 
-    const added = await doAdd(args);
+    await doAdd(args);
 
-    console.log("added response", added);
+    console.log("Done");
 
     return process.exit(0);
 
