@@ -1,5 +1,5 @@
 {
-  "name": "elements-cli",
+  "name": "@atomlab/elements",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -13,7 +13,7 @@
   "license": "ISC",
   "exports": "./dist/index.js",
   "bin": {
-    "elements-cli": "./dist/index.js"
+    "@atomlab/elements": "./dist/index.js"
   },
   "type": "module",
   "dependencies": {
