@@ -4,7 +4,16 @@
     "directory": "test/test34343",
     "installed": [
       "Checkbox",
-      "Button"
+      "Button",
+      "Checkbox",
+      "Checkbox",
+      "Checkbox",
+      "Select",
+      "Button",
+      "Select",
+      "Checkbox",
+      "select",
+      "checkbox"
     ]
   }
 }

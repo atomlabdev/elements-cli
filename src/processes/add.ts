@@ -2,6 +2,8 @@ import { existsSync, promises as fs } from "fs";
 import path, { resolve } from "path";
 import prompts from "prompts";
 import { installComponent } from "../install/install-component.js";
+import { installPackages } from "../install/install-packages.js";
+import { detect } from "@antfu/ni";
 
 const getComponentData = (item: string): Promise<any> => {
   return new Promise(async (resolve, reject) => {
@@ -23,7 +25,6 @@ const getComponentData = (item: string): Promise<any> => {
 };
 
 export const doAdd = async (components: string[]) => {
-  console.log("do Add");
   const cwd = process.cwd();
   const configFile = await fs.readFile(`${cwd}/elements-config.json`, "utf8");
   const config = JSON.parse(configFile);
@@ -36,9 +37,6 @@ export const doAdd = async (components: string[]) => {
   const registryComponents = registryData.map((c: any) => c.slug);
   const invalid = components.filter(
     (c: string) => !registryComponents.includes(c)
-  );
-  const valid = components.filter((c: string) =>
-    registryComponents.includes(c)
   );
 
   if (invalid.length) {
@@ -58,11 +56,23 @@ export const doAdd = async (components: string[]) => {
     return process.exit(1);
   }
 
+  // console.log("components", components);
+  const valid = components.filter((c: string) => {
+    if (config && config.components && config.components.installed) {
+      if (config.components.installed.includes(c)) {
+        console.log(`Skipping ${c} - already installed`);
+        return false;
+      }
+    }
+    return true;
+  });
+
   const promiseArr = valid.map((item: string) => getComponentData(item));
   const results = await Promise.all(promiseArr);
   const targetDir = `${cwd}/${config.components.directory}`;
 
   const existingArr = results.filter((result) => {
+    // check for already existing files not created via elements
     const p = path.resolve(targetDir, result.filename);
     const exists = existsSync(p);
 
@@ -72,8 +82,6 @@ export const doAdd = async (components: string[]) => {
       return false;
     }
   });
-
-  // console.log("existing components", existingArr);
 
   if (existingArr && existingArr.length) {
     const overwritePrompt = await prompts({
@@ -90,6 +98,20 @@ export const doAdd = async (components: string[]) => {
     }
   }
 
+  const externalDependencies = results.reduce((prev, curr) => {
+    if (curr.dependencies.external) {
+      return [...prev, ...curr.dependencies.external];
+    }
+
+    return prev;
+  }, []);
+
+  const packageManager = await detect({ programmatic: true, cwd: cwd });
+
+  if (externalDependencies && externalDependencies.length) {
+    await installPackages(externalDependencies, packageManager);
+  }
+
   const installed = await Promise.all(
     results.map((result) => installComponent(result, targetDir))
   );
@@ -98,7 +120,10 @@ export const doAdd = async (components: string[]) => {
     ...config,
     components: {
       ...config.components,
-      installed: [...config.components.installed, ...installed],
+      installed: [
+        ...config.components.installed,
+        ...installed.map((i) => i.toLowerCase()),
+      ],
     },
   };
 
