@@ -4,6 +4,9 @@ import { $ } from "execa";
 import { detect } from "@antfu/ni";
 import { installPackages } from "../install/install-packages.js";
 import { promptIsExpo } from "../prompts/is-expo.js";
+import { Ora } from "ora";
+import chalk from "chalk";
+import { logMessage } from "../utils/log.js";
 
 export const doInit = async () => {
   const cwd = process.cwd();
@@ -41,6 +44,13 @@ export const doInit = async () => {
 
     const packageManager = await detect({ programmatic: true, cwd: cwd });
     await installPackages(["twrnc"], packageManager);
+
+    if (!isExpo) {
+      logMessage(
+        "warning",
+        "As you're not using Expo, you'll need to install and configure React Native Vector Icons to use many Elements components out of the box - please see the docs for instructions: https://github.com/oblador/react-native-vector-icons"
+      );
+    }
 
     return true;
   } else {

@@ -1,6 +1,7 @@
 import { $ } from "execa";
 import { PackageManager } from "../utils/get-install-command.js";
 import { getInstallCommand } from "../utils/get-install-command.js";
+import { logMessage } from "../utils/log.js";
 
 export const installPackages = (
   packages: string[],
@@ -10,7 +11,8 @@ export const installPackages = (
     try {
       const installCommand = getInstallCommand(packageManager);
       const packagesStr = packages.map((p) => p).join(" ");
-      console.log(
+      logMessage(
+        "action",
         `Installing external dependencies with ${packageManager}: ${packagesStr}`
       );
       await $`${packageManager || ""} ${installCommand} ${packagesStr}`;

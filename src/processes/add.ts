@@ -4,6 +4,7 @@ import prompts from "prompts";
 import { installComponent } from "../install/install-component.js";
 import { installPackages } from "../install/install-packages.js";
 import { detect } from "@antfu/ni";
+import { logMessage } from "../utils/log.js";
 
 const getComponentData = (item: string): Promise<any> => {
   return new Promise(async (resolve, reject) => {
@@ -43,7 +44,8 @@ export const doAdd = async (components: string[]) => {
     // spinner.fail(
     //   `Component(s) not found: ${invalid.map((i: string) => i).join(", ")}`
     // );
-    console.log(
+    logMessage(
+      "error",
       `Invalid component(s) provided: ${invalid
         .map((i: string) => i)
         .join(", ")}`
@@ -52,7 +54,7 @@ export const doAdd = async (components: string[]) => {
   }
 
   if (!config.components.directory) {
-    console.log("No component directory detected");
+    logMessage("error", "No component directory detected");
     return process.exit(1);
   }
 
@@ -60,7 +62,7 @@ export const doAdd = async (components: string[]) => {
   const valid = components.filter((c: string) => {
     if (config && config.components && config.components.installed) {
       if (config.components.installed.includes(c)) {
-        console.log(`Skipping ${c} - already installed`);
+        logMessage("warning", `Skipping ${c} - already installed`);
         return false;
       }
     }

@@ -7,6 +7,7 @@ import { promptComponentDir } from "../prompts/component-dir.js";
 import { rootDirCheck } from "../checks/root-dir.js";
 import { existingConfigCheck } from "../checks/existing-config.js";
 import { doInit } from "../processes/init.js";
+import { logMessage } from "../utils/log.js";
 
 export const init = new Command()
   .name("init")
@@ -15,7 +16,8 @@ export const init = new Command()
     const isRootDir = await rootDirCheck();
 
     if (!isRootDir) {
-      console.error(
+      logMessage(
+        "error",
         "No package.json detected - please check you're in the root directory and try again"
       );
       return process.exit(1);
@@ -24,17 +26,17 @@ export const init = new Command()
     const hasExistingConfig = await existingConfigCheck();
 
     if (hasExistingConfig) {
-      console.error("Existing elements-config.json detected.");
+      logMessage("error", "Existing elements-config.json detected.");
       return process.exit(1);
     }
 
     const done = await doInit();
 
     if (done) {
-      console.log("Config created successfully");
+      logMessage("success", "Config created successfully");
       process.exit(0);
     } else {
-      console.error("Unable to create config");
+      logMessage("error", "Unable to create config");
       process.exit(1);
     }
   });

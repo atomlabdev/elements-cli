@@ -8,8 +8,6 @@ export const validateConfig = async () => {
   const config = JSON.parse(configFile);
 
   if (!config.components) {
-    console.log("adding missing component dir option");
-
     const newComponentDir = await promptComponentDir();
 
     const newComponentObj = {
