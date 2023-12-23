@@ -1,16 +1,18 @@
-export type PackageManager =
-  | "npm"
-  | "pnpm"
-  | "yarn"
-  | "yarn@berry"
-  | "pnpm@6"
-  | "bun"
-  | null;
+import { detect } from "@antfu/ni";
+import { getConfig } from "./get-config.js";
+import { getProjectDeps } from "./get-project-deps.js";
 
-export const getInstallCommand = (packageManager: PackageManager) => {
-  if (packageManager === "yarn") {
-    return "add";
+export const getInstallCommand = async () => {
+  const packageManager = await detect();
+  const deps = await getProjectDeps();
+
+  if (deps && deps.includes("expo")) {
+    return "npx expo install";
   }
 
-  return "install";
+  if (packageManager === "yarn") {
+    return "yarn add";
+  }
+
+  return `${packageManager} install`;
 };

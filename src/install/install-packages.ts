@@ -1,19 +1,13 @@
 import { $ } from "execa";
-import { PackageManager } from "../utils/get-install-command.js";
 import { getInstallCommand } from "../utils/get-install-command.js";
 import { logMessage } from "../utils/log.js";
-import { existsSync, promises as fs } from "fs";
+import { promises as fs } from "fs";
+import { getProjectDeps } from "../utils/get-project-deps.js";
 
-export const installPackages = (
-  packages: string[],
-  packageManager: PackageManager
-): Promise<boolean> => {
+export const installPackages = (packages: string[]): Promise<boolean> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const cwd = process.cwd();
-      const packageJsonFile = await fs.readFile(`${cwd}/package.json`, "utf8");
-      const packageJson = JSON.parse(packageJsonFile);
-      const packageJsonDependencies = Object.keys(packageJson["dependencies"]);
+      const packageJsonDependencies = await getProjectDeps();
 
       const dependencies = packages.reduce(
         (prev: any, curr: any) => {
@@ -45,18 +39,20 @@ export const installPackages = (
       }
 
       if (dependencies.new.length) {
-        const installCommand = getInstallCommand(packageManager);
+        const installCommand = await getInstallCommand();
         const packagesStr = dependencies.new.map((p) => p).join(", ");
         logMessage(
           "action",
-          `Installing external dependencies with ${packageManager}: ${packagesStr}`
+          `Installing external dependencies: ${packagesStr}`
         );
-        await $`${packageManager || ""} ${installCommand} ${packagesStr}`;
+        console.log(`running command ${installCommand} ${packagesStr}`);
+        await $`npx expo install ${packagesStr}`;
         resolve(true);
       } else {
         resolve(true);
       }
     } catch (e) {
+      console.log("install error", e);
       reject(false);
     }
   });
