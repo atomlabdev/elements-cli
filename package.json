@@ -1,6 +1,6 @@
 {
-  "name": "@atomlabdev/elements",
-  "version": "1.0.1",
+  "name": "elements-cli",
+  "version": "0.1.0",
   "main": "dist/index.js",
   "scripts": {
     "start": "npx tsc && node ./dist",
@@ -32,9 +32,6 @@
     "@types/prompts": "^2.4.9",
     "tsup": "^8.0.1",
     "typescript": "^5.2.2"
-  },
-  "directories": {
-    "test": "test"
   },
   "description": ""
 }
