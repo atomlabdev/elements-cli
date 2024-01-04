@@ -1,15 +1,19 @@
 import { $ } from "execa";
 import { getInstallCommand } from "../utils/get-install-command.js";
 import { logMessage } from "../utils/log.js";
-import { promises as fs } from "fs";
 import { getProjectDeps } from "../utils/get-project-deps.js";
+
+type SortedDependencies = {
+  existing: string[];
+  new: string[];
+};
 
 export const installPackages = (packages: string[]): Promise<boolean> => {
   return new Promise(async (resolve, reject) => {
     try {
       const packageJsonDependencies = await getProjectDeps();
 
-      const dependencies = packages.reduce(
+      const dependencies: SortedDependencies = packages.reduce(
         (prev: any, curr: any) => {
           if (packageJsonDependencies.includes(curr)) {
             return {

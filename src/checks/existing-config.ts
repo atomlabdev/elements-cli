@@ -1,4 +1,4 @@
-import { existsSync, promises as fs } from "fs";
+import { promises as fs } from "fs";
 
 export const existingConfigCheck = async () => {
   const cwd = process.cwd();

@@ -1,9 +1,4 @@
 import { Command } from "commander";
-import path, { resolve } from "path";
-import { existsSync, promises as fs } from "fs";
-import ora from "ora";
-import prompts from "prompts";
-import { promptComponentDir } from "../prompts/component-dir.js";
 import { rootDirCheck } from "../checks/root-dir.js";
 import { existingConfigCheck } from "../checks/existing-config.js";
 import { doInit } from "../processes/init.js";

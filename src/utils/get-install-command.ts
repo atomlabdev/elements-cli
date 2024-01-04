@@ -1,5 +1,4 @@
 import { detect } from "@antfu/ni";
-import { getConfig } from "./get-config.js";
 import { getProjectDeps } from "./get-project-deps.js";
 
 export const getInstallCommand = async () => {

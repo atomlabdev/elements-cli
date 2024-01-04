@@ -1,23 +1,10 @@
 import { Command } from "commander";
-import path, { resolve } from "path";
-import { existsSync, promises as fs } from "fs";
-import ora from "ora";
-import prompts from "prompts";
-import { promptComponentDir } from "../prompts/component-dir.js";
 import { existingConfigCheck } from "../checks/existing-config.js";
 import { doInit } from "../processes/init.js";
 import { rootDirCheck } from "../checks/root-dir.js";
 import { validateConfig } from "../checks/validate-config.js";
 import { doAdd } from "../processes/add.js";
 import { logMessage } from "../utils/log.js";
-
-// check component exists in registry [D]
-// fetch component [D]
-// ask user what directory they want to install component in [D]
-// overwrite check
-// write component to directory [D]
-
-// no one command install for multiple components - for now internal dependencies must also be instlled in same command ie. npx elements add button button-group
 
 export const add = new Command()
   .name("add")

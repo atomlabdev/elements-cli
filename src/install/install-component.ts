@@ -1,16 +1,22 @@
-import path, { resolve } from "path";
+import path from "path";
 import fs from "fs";
-import { $ } from "execa";
-import { installPackages } from "./install-packages.js";
-import { detect } from "@antfu/ni";
 import { logMessage } from "../utils/log.js";
+import { getProjectDeps } from "../utils/get-project-deps.js";
+import { expoToRn } from "../utils/expo-to-rn.js";
 
-// todo - move dependencies to components.json
-
-export const installComponent = (result: any, targetDir: string) => {
+export const installComponent = (
+  result: any,
+  targetDir: string
+): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     let filePath = path.resolve(targetDir, result.filename);
-    fs.writeFile(filePath, JSON.parse(result.install), (err) => {
+    const deps = await getProjectDeps();
+
+    const install = deps.includes("expo")
+      ? result.install
+      : expoToRn(result.install);
+
+    fs.writeFile(filePath, JSON.parse(install), (err) => {
       if (err) {
         logMessage("error", `Error creating ${result.filename}`);
         reject(err);

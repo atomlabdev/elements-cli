@@ -1,4 +1,4 @@
-import { existsSync, promises as fs } from "fs";
+import { promises as fs } from "fs";
 import { promptComponentDir } from "../prompts/component-dir.js";
 
 export const validateConfig = async () => {

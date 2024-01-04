@@ -1,9 +1,8 @@
 import { existsSync, promises as fs } from "fs";
-import path, { resolve } from "path";
+import path from "path";
 import prompts from "prompts";
 import { installComponent } from "../install/install-component.js";
 import { installPackages } from "../install/install-packages.js";
-import { detect } from "@antfu/ni";
 import { logMessage } from "../utils/log.js";
 
 const getComponentData = (item: string): Promise<any> => {
@@ -30,7 +29,6 @@ export const doAdd = async (components: string[]) => {
   const configFile = await fs.readFile(`${cwd}/elements-config.json`, "utf8");
   const config = JSON.parse(configFile);
 
-  // const spinner = ora(`Installing components...`).start();
   const registry = await fetch(
     "https://elements.atomlab.dev/registry/components.json"
   );
@@ -41,9 +39,6 @@ export const doAdd = async (components: string[]) => {
   );
 
   if (invalid.length) {
-    // spinner.fail(
-    //   `Component(s) not found: ${invalid.map((i: string) => i).join(", ")}`
-    // );
     logMessage(
       "error",
       `Invalid component(s) provided: ${invalid
@@ -58,7 +53,6 @@ export const doAdd = async (components: string[]) => {
     return process.exit(1);
   }
 
-  // console.log("components", components);
   const valid = components.filter((c: string) => {
     if (config && config.components && config.components.installed) {
       if (config.components.installed.includes(c)) {
@@ -74,7 +68,6 @@ export const doAdd = async (components: string[]) => {
   const targetDir = `${cwd}/${config.components.directory}`;
 
   const existingArr = results.filter((result) => {
-    // check for already existing files not created via elements
     const p = path.resolve(targetDir, result.filename);
     const exists = existsSync(p);
 
@@ -108,10 +101,8 @@ export const doAdd = async (components: string[]) => {
     return prev;
   }, []);
 
-  const packageManager = await detect({ programmatic: true, cwd: cwd });
-
   if (externalDependencies && externalDependencies.length) {
-    await installPackages(externalDependencies, packageManager);
+    await installPackages(externalDependencies);
   }
 
   const installed = await Promise.all(
@@ -124,7 +115,7 @@ export const doAdd = async (components: string[]) => {
       ...config.components,
       installed: [
         ...config.components.installed,
-        ...installed.map((i) => i.toLowerCase()),
+        ...installed.map((i: string) => i.toLowerCase()),
       ],
     },
   };

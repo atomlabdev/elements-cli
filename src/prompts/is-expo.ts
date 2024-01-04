@@ -1,9 +1,6 @@
-import { existsSync, promises as fs } from "fs";
 import prompts from "prompts";
 
 export const promptIsExpo = async () => {
-  const cwd = process.cwd();
-
   const response = await prompts({
     type: "confirm",
     name: "expo",
