@@ -49,7 +49,6 @@ export const installPackages = (packages: string[]): Promise<boolean> => {
           "action",
           `Installing external dependencies: ${packagesStr}`
         );
-        console.log(`running command ${installCommand} ${packagesStr}`);
         await $`npx expo install ${packagesStr}`;
         resolve(true);
       } else {
